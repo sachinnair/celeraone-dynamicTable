@@ -15,6 +15,7 @@
 	readJsonFile("./data/sample.json", function(data){
 			sampleData = JSON.parse(data);
 
+      // Populate dropdown
       var dataSelector = document.querySelector('select');
       for(dataset of Object.keys(sampleData)){
         var option_ref = document.createElement('option')
@@ -27,20 +28,6 @@
         populateTable(sampleData[selectedValue]);
       };
 
-      var forAllTh = document.querySelectorAll('th');
-      [].forEach.call(document.querySelectorAll('th'), function(x){return x.onclick = onHeaderClick });
-
-      function onHeaderClick (evt){
-        console.log("Hey", evt);
-        var sortOrder = evt.target.getAttribute('data-sortorder');
-        var sortedOn = evt.target.textContent;
-
-        var selectedValue = dataSelector.value;
-        var newRecords = sortRecords(sampleData[selectedValue], sortedOn, sortOrder);
-        formRows(newRecords, columns, document.querySelector('tbody'));
-
-        evt.target.setAttribute('data-sortorder', parseInt(sortOrder) * -1)
-      };
 	});
 
   
@@ -61,6 +48,10 @@
       tableRef.appendChild(headerRef);
       tableRef.appendChild(tBodyRef);
       tablePlaceHolder.appendChild(tableRef);
+
+      var forAllTh = document.querySelectorAll('th');
+      [].forEach.call(document.querySelectorAll('th'), function(x){return x.onclick = onHeaderClick });
+
     } else {
       tablePlaceHolder.appendChild(document.createTextNode('No data to display'));
     }
@@ -107,5 +98,17 @@
     return records.sort(function(x, y){
       return x[sortOn] > y[sortOn] ? sortOrder * 1 : sortOrder * -1; 
     }) 
+  };
+
+  function onHeaderClick (evt){
+    var sortOrder = evt.target.getAttribute('data-sortorder');
+    var sortedOn = evt.target.textContent;
+
+    var dataSelector = document.querySelector('select');
+    var selectedValue = dataSelector.value;
+    var newRecords = sortRecords(sampleData[selectedValue], sortedOn, sortOrder);
+    formRows(newRecords, columns, document.querySelector('tbody'));
+
+    evt.target.setAttribute('data-sortorder', parseInt(sortOrder) * -1)
   };
 })();
