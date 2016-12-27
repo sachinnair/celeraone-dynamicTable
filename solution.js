@@ -14,8 +14,7 @@
   var sampleData;
 	readJsonFile("./data/sample.json", function(data){
 			sampleData = JSON.parse(data);
-			console.log(sampleData);
-      populateTable(sampleData.A);
+
       var dataSelector = document.querySelector('select');
       for(dataset of Object.keys(sampleData)){
         var option_ref = document.createElement('option')
@@ -25,12 +24,28 @@
       }
       dataSelector.onchange = function(){
         var selectedValue = dataSelector.value;
-        populateTable(sampleData[selectedValue])
+        populateTable(sampleData[selectedValue]);
+      };
+
+      var forAllTh = document.querySelectorAll('th');
+      [].forEach.call(document.querySelectorAll('th'), function(x){return x.onclick = onHeaderClick });
+
+      function onHeaderClick (evt){
+        console.log("Hey", evt);
+        var sortOrder = evt.target.getAttribute('data-sortorder');
+        var sortedOn = evt.target.textContent;
+
+        var selectedValue = dataSelector.value;
+        var newRecords = sortRecords(sampleData[selectedValue], sortedOn, sortOrder);
+        formRows(newRecords, columns, document.querySelector('tbody'));
+
+        evt.target.setAttribute('data-sortorder', parseInt(sortOrder) * -1)
       };
 	});
 
   
 
+  var columns;
   function populateTable(records){
     var tablePlaceHolder = document.querySelector('.tableHolder');
     tablePlaceHolder.innerHTML = '';
@@ -39,7 +54,7 @@
       var headerRef = document.createElement('thead');
       var tBodyRef = document.createElement('tbody');
 
-      var columns = getColumns(records);
+      columns = getColumns(records);
       formHeader(columns, headerRef);
       formRows(records, columns, tBodyRef);
 
@@ -66,6 +81,8 @@
   function formHeader(column_names, header_ref){
     for(name of column_names){
       var th_ref = document.createElement('th');
+      th_ref.setAttribute('data-sorted', false);
+      th_ref.setAttribute('data-sortorder', 1); // 1 indicates descending
       var column_name = document.createTextNode(name);
       th_ref.appendChild(column_name);
       header_ref.appendChild(th_ref);
@@ -73,8 +90,8 @@
   }
 
 	function formRows(records, columns, tbody_ref){
+    tbody_ref.innerHTML = '';
     for(record of records){
-        
       var row_ref = document.createElement('tr') ;
       for(column of columns){
         var td_ref = document.createElement("td");
@@ -84,5 +101,11 @@
       }
       tbody_ref.appendChild(row_ref);
     }
+  };
+
+  function sortRecords(records, sortOn, sortOrder){
+    return records.sort(function(x, y){
+      return x[sortOn] > y[sortOn] ? sortOrder * 1 : sortOrder * -1; 
+    }) 
   };
 })();
